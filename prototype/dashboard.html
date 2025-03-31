@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>個人儀表板 - GitHub Trending 追蹤器</title>
+    <style>
+        :root {
+            --primary: #0070f3;
+            --secondary: #6c757d;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --background: #f9fafb;
+            --background-dark: #18181b;
+            --card: #ffffff;
+            --card-dark: #1f1f23;
+            --text: #1f2937;
+            --text-dark: #e4e4e7;
+            --border: #e5e7eb;
+            --border-dark: #27272a;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+                Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--background);
+            color: var(--text);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: var(--background-dark);
+                color: var(--text-dark);
+            }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1rem;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            header {
+                border-color: var(--border-dark);
+            }
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .nav {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .nav a {
+            text-decoration: none;
+            color: var(--secondary);
+            transition: color 0.2s;
+            position: relative;
+        }
+
+        .nav a:hover {
+            color: var(--primary);
+        }
+
+        .nav a.active {
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        .nav a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -4px;
+            left: 0;
+            background-color: var(--primary);
+            transition: width 0.3s;
+        }
+
+        .nav a:hover::after, .nav a.active::after {
+            width: 100%;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .card {
+            background-color: var(--card);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .card {
+                background-color: var(--card-dark);
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            }
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .card-header {
+                border-color: var(--border-dark);
+            }
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 500;
+            margin: 0;
+        }
+
+        .badge {
+            display: inline-block;
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+        }
+
+        .badge-warning {
+            background-color: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+
+        .repo-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .repo-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem;
+            border-radius: 0.25rem;
+            transition: background-color 0.2s;
+        }
+
+        .repo-item:hover {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .repo-item:hover {
+                background-color: rgba(255, 255, 255, 0.02);
+            }
+        }
+
+        .repo-rank {
+            width: 1.5rem;
+            height: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 500;
+            font-size: 0.875rem;
+            color: var(--text);
+            background-color: rgba(0, 0, 0, 0.05);
+            border-radius: 0.25rem;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .repo-rank {
+                background-color: rgba(255, 255, 255, 0.05);
+                color: var(--text-dark);
+            }
+        }
+
+        .repo-info {
+            flex: 1;
+        }
+
+        .repo-name {
+            font-weight: 500;
+            color: var(--primary);
+            text-decoration: none;
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .repo-name:hover {
+            text-decoration: underline;
+        }
+
+        .repo-description {
+            font-size: 0.875rem;
+            color: var(--secondary);
+            margin: 0;
+        }
+
+        .repo-stats {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            margin-top: 0.25rem;
+        }
+
+        .repo-stat {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.75rem;
+            color: var(--secondary);
+        }
+
+        .language-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            background-color: rgba(59, 130, 246, 0.1);
+            color: var(--info);
+        }
+
+        .language-badge::before {
+            content: '';
+            display: block;
+            width: 0.75rem;
+            height: 0.75rem;
+            border-radius: 50%;
+        }
+
+        .language-javascript::before {
+            background-color: #f7df1e;
+        }
+
+        .language-python::before {
+            background-color: #3572A5;
+        }
+
+        .language-typescript::before {
+            background-color: #3178c6;
+        }
+
+        .language-go::before {
+            background-color: #00ADD8;
+        }
+
+        .language-rust::before {
+            background-color: #DEA584;
+        }
+
+        .language-java::before {
+            background-color: #b07219;
+        }
+
+        .language-cpp::before {
+            background-color: #f34b7d;
+        }
+
+        .star-count {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .stars-new {
+            color: var(--success);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .settings-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-label {
+            font-weight: 500;
+            font-size: 0.875rem;
+        }
+
+        .form-input, .form-select {
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            border: 1px solid var(--border);
+            background-color: var(--card);
+            color: var(--text);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .form-input, .form-select {
+                background-color: var(--card-dark);
+                border-color: var(--border-dark);
+                color: var(--text-dark);
+            }
+        }
+
+        .checkbox-group {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background-color: var(--primary);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            text-decoration: none;
+            transition: background-color 0.2s;
+            border: none;
+            cursor: pointer;
+            font-size: 0.875rem;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            border: 1px solid var(--border);
+            color: var(--secondary);
+        }
+
+        .btn-secondary:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .btn-secondary {
+                border-color: var(--border-dark);
+            }
+
+            .btn-secondary:hover {
+                background-color: rgba(255, 255, 255, 0.05);
+            }
+        }
+
+        .tag-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            background-color: rgba(59, 130, 246, 0.1);
+            color: var(--info);
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+        }
+
+        .tag-remove {
+            cursor: pointer;
+            opacity: 0.7;
+        }
+
+        .tag-remove:hover {
+            opacity: 1;
+        }
+
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .nav {
+                margin-top: 1rem;
+                width: 100%;
+                overflow-x: auto;
+                padding-bottom: 0.5rem;
+            }
+
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="index.html" class="logo">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+                </svg>
+                GitHub Trending 追蹤器
+            </a>
+            <nav class="nav">
+                <a href="daily.html">每日趨勢</a>
+                <a href="weekly.html">每週趨勢</a>
+                <a href="history.html">歷史數據</a>
+                <a href="dashboard.html" class="active">儀表板</a>
+                <a href="monitor.html">系統監控</a>
+            </nav>
+        </header>
+
+        <div class="page-header">
+            <h1>個人儀表板</h1>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="main-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">我的關注項目</h2>
+                        <span class="badge">6 個項目</span>
+                    </div>
+                    <ul class="repo-list">
+                        <li class="repo-item">
+                            <span class="repo-rank">1</span>
+                            <div class="repo-info">
+                                <a href="#" class="repo-name">vercel/next.js</a>
+                                <p class="repo-description">The React Framework for Production</p>
+                                <div class="repo-stats">
+                                    <span class="language-badge language-javascript">JavaScript</span>
+                                    <span class="repo-stat">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                        </svg>
+                                        98,245
+                                    </span>
+                                    <span class="repo-stat stars-new">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                                            <polyline points="19 12 12 19 5 12"></polyline>
+                                        </svg>
+                                        +342
+                                    </span>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="repo-item">
+                            <span class="repo-rank">2</span>
+                            <div class="repo-info">
+                                <a href="#" class="repo-name">openai/whisper</a>
+                                <p class="repo-description">Robust Speech Recognition via Large-Scale Weak Supervision</p>
+                                <div class="repo-stats">
+                                    <span class="language-badge language-python">Python</span>
+                                    <span class="repo-stat">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                        </svg>
+                                        47,986
+                                    </span>
+                                    <span class="repo-stat stars-new">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                                            <polyline points="19 12 12 19 5 12"></polyline>
+                                        </svg>
+                                        +287
+                                    </span>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="repo-item">
+                            <span class="repo-rank">3</span>
+                            <div class="repo-info">
+                                <a href="#" class="repo-name">tailwindlabs/tailwindcss</a>
+                                <p class="repo-description">A utility-first CSS framework for rapid UI development.</p>
+                                <div class="repo-stats">
+                                    <span class="language-badge language-javascript">JavaScript</span>
+                                    <span class="repo-stat">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                        </svg>
+                                        65,432
+                                    </span>
+                                    <span class="repo-stat stars-new">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                                            <polyline points="19 12 12 19 5 12"></polyline>
+                                        </svg>
+                                        +175
+                                    </span>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">推薦項目</h2>
+                        <span class="badge badge-warning">根據您的關注</span>
+                    </div>
+                    <ul class="repo-list">
+                        <li class="repo-item">
+                            <div class="repo-info">
+                                <a href="#" class="repo-name">shadcn/ui</a>
+                                <p class="repo-description">Beautifully designed components built with Radix UI and Tailwind CSS.</p>
+                                <div class="repo-stats">
+                                    <span class="language-badge language-typescript">TypeScript</span>
+                                    <span class="repo-stat">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                        </svg>
+                                        32,156
+                                    </span>
+                                    <span class="repo-stat stars-new">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                                            <polyline points="19 12 12 19 5 12"></polyline>
+                                        </svg>
+                                        +213
+                                    </span>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="repo-item">
+                            <div class="repo-info">
+                                <a href="#" class="repo-name">langchain-ai/langchain</a>
+                                <p class="repo-description">⚡ Building applications with LLMs through composability ⚡</p>
+                                <div class="repo-stats">
+                                    <span class="language-badge language-python">Python</span>
+                                    <span class="repo-stat">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                        </svg>
+                                        65,789
+                                    </span>
+                                    <span class="repo-stat stars-new">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                                            <polyline points="19 12 12 19 5 12"></polyline>
+                                        </svg>
+                                        +795
+                                    </span>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">儀表板設定</h2>
+                    </div>
+                    <form class="settings-form">
+                        <div class="form-group">
+                            <label class="form-label">顯示項目數量</label>
+                            <select class="form-select">
+                                <option value="5">5</option>
+                                <option value="10" selected>10</option>
+                                <option value="20">20</option>
+                                <option value="50">50</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">關注的程式語言</label>
+                            <div class="checkbox-group">
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="lang-js" checked>
+                                    <label for="lang-js">JavaScript</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="lang-ts" checked>
+                                    <label for="lang-ts">TypeScript</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="lang-python" checked>
+                                    <label for="lang-python">Python</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="lang-go">
+                                    <label for="lang-go">Go</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="lang-rust">
+                                    <label for="lang-rust">Rust</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="lang-java">
+                                    <label for="lang-java">Java</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">關注的主題標籤</label>
+                            <input type="text" class="form-input" placeholder="輸入標籤按 Enter 新增...">
+                            <div class="tag-list">
+                                <span class="tag">
+                                    AI
+                                    <svg class="tag-remove" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                                    </svg>
+                                </span>
+                                <span class="tag">
+                                    Web Development
+                                    <svg class="tag-remove" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                                    </svg>
+                                </span>
+                                <span class="tag">
+                                    Machine Learning
+                                    <svg class="tag-remove" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">通知選項</label>
+                            <div class="checkbox-group">
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="notify-daily" checked>
+                                    <label for="notify-daily">每日熱門項目通知</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="notify-weekly" checked>
+                                    <label for="notify-weekly">每週熱門項目通知</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="notify-followed">
+                                    <label for="notify-followed">關注項目更新通知</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn">儲存設定</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

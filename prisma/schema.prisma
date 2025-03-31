@@ -1,0 +1,744 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model DailyRepository {
+  id           Int      @id @default(autoincrement())
+  repoId       String   @unique
+  name         String
+  owner        String
+  description  String?
+  url          String
+  language     String?
+  stars        Int
+  forks        Int
+  currentStars Int
+  trendingDate DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([trendingDate])
+  @@index([language])
+}
+
+model WeeklyRepository {
+  id           Int      @id @default(autoincrement())
+  repoId       String   @unique
+  name         String
+  owner        String
+  description  String?
+  url          String
+  language     String?
+  stars        Int
+  forks        Int
+  currentStars Int
+  trendingDate DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([trendingDate])
+  @@index([language])
+}
+
+model MonthlyRepository {
+  id           Int      @id @default(autoincrement())
+  repoId       String   @unique
+  name         String
+  owner        String
+  description  String?
+  url          String
+  language     String?
+  stars        Int
+  forks        Int
+  currentStars Int
+  trendingDate DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([trendingDate])
+  @@index([language])
+}
+
+model ScrapingJobLog {
+  id          Int       @id @default(autoincrement())
+  jobName     String
+  startTime   DateTime
+  endTime     DateTime?
+  status      String
+  recordCount Int       @default(0)
+  message     String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([jobName])
+  @@index([status])
+  @@index([startTime])
+}
+
+model CPPDailyRepository {
+  id           String   @id @default(cuid())
+  owner        String
+  name         String
+  url          String
+  description  String?
+  stars        Int
+  currentStars Int
+  forks        Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  scrapedAt    DateTime @default(now())
+
+  @@unique([owner, name])
+  @@index([scrapedAt])
+}
+
+model CPPWeeklyRepository {
+  id           String   @id @default(cuid())
+  owner        String
+  name         String
+  url          String
+  description  String?
+  stars        Int
+  currentStars Int
+  forks        Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  scrapedAt    DateTime @default(now())
+
+  @@unique([owner, name])
+  @@index([scrapedAt])
+}
+
+model CPPMonthlyRepository {
+  id           String   @id @default(cuid())
+  owner        String
+  name         String
+  url          String
+  description  String?
+  stars        Int
+  currentStars Int
+  forks        Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  scrapedAt    DateTime @default(now())
+
+  @@unique([owner, name])
+  @@index([scrapedAt])
+}
+
+model GoDailyRepository {
+  id           String   @id @default(cuid())
+  owner        String
+  name         String
+  url          String
+  description  String?
+  stars        Int
+  currentStars Int
+  forks        Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  scrapedAt    DateTime @default(now())
+
+  @@unique([owner, name])
+  @@index([scrapedAt])
+}
+
+model GoWeeklyRepository {
+  id           String   @id @default(cuid())
+  owner        String
+  name         String
+  url          String
+  description  String?
+  stars        Int
+  currentStars Int
+  forks        Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  scrapedAt    DateTime @default(now())
+
+  @@unique([owner, name])
+  @@index([scrapedAt])
+}
+
+model GoMonthlyRepository {
+  id           String   @id @default(cuid())
+  owner        String
+  name         String
+  url          String
+  description  String?
+  stars        Int
+  currentStars Int
+  forks        Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  scrapedAt    DateTime @default(now())
+
+  @@unique([owner, name])
+  @@index([scrapedAt])
+}
+
+model JavaScriptDailyRepository {
+  id           String   @id @default(cuid())
+  owner        String
+  name         String
+  url          String
+  description  String?
+  stars        Int
+  currentStars Int
+  forks        Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  scrapedAt    DateTime @default(now())
+
+  @@unique([owner, name])
+  @@index([scrapedAt])
+}
+
+model JavaScriptWeeklyRepository {
+  id           String   @id @default(cuid())
+  owner        String
+  name         String
+  url          String
+  description  String?
+  stars        Int
+  currentStars Int
+  forks        Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  scrapedAt    DateTime @default(now())
+
+  @@unique([owner, name])
+  @@index([scrapedAt])
+}
+
+model JavaScriptMonthlyRepository {
+  id           String   @id @default(cuid())
+  owner        String
+  name         String
+  url          String
+  description  String?
+  stars        Int
+  currentStars Int
+  forks        Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  scrapedAt    DateTime @default(now())
+
+  @@unique([owner, name])
+  @@index([scrapedAt])
+}
+
+model TypeScriptDailyRepository {
+  id           String   @id @default(cuid())
+  owner        String
+  name         String
+  url          String
+  description  String?
+  stars        Int
+  currentStars Int
+  forks        Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  scrapedAt    DateTime @default(now())
+
+  @@unique([owner, name])
+  @@index([scrapedAt])
+}
+
+model TypeScriptWeeklyRepository {
+  id           String   @id @default(cuid())
+  owner        String
+  name         String
+  url          String
+  description  String?
+  stars        Int
+  currentStars Int
+  forks        Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  scrapedAt    DateTime @default(now())
+
+  @@unique([owner, name])
+  @@index([scrapedAt])
+}
+
+model TypeScriptMonthlyRepository {
+  id           String   @id @default(cuid())
+  owner        String
+  name         String
+  url          String
+  description  String?
+  stars        Int
+  currentStars Int
+  forks        Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  scrapedAt    DateTime @default(now())
+
+  @@unique([owner, name])
+  @@index([scrapedAt])
+}
+
+model PythonDailyRepository {
+  id           String   @id @default(cuid())
+  owner        String
+  name         String
+  url          String
+  description  String?
+  stars        Int
+  currentStars Int
+  forks        Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  scrapedAt    DateTime @default(now())
+
+  @@unique([owner, name])
+  @@index([scrapedAt])
+}
+
+model PythonWeeklyRepository {
+  id           String   @id @default(cuid())
+  owner        String
+  name         String
+  url          String
+  description  String?
+  stars        Int
+  currentStars Int
+  forks        Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  scrapedAt    DateTime @default(now())
+
+  @@unique([owner, name])
+  @@index([scrapedAt])
+}
+
+model PythonMonthlyRepository {
+  id           String   @id @default(cuid())
+  owner        String
+  name         String
+  url          String
+  description  String?
+  stars        Int
+  currentStars Int
+  forks        Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  scrapedAt    DateTime @default(now())
+
+  @@unique([owner, name])
+  @@index([scrapedAt])
+}
+
+model JavaDailyRepository {
+  id           String   @id @default(cuid())
+  owner        String
+  name         String
+  url          String
+  description  String?
+  stars        Int
+  currentStars Int
+  forks        Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  scrapedAt    DateTime @default(now())
+
+  @@unique([owner, name])
+  @@index([scrapedAt])
+}
+
+model JavaWeeklyRepository {
+  id           String   @id @default(cuid())
+  owner        String
+  name         String
+  url          String
+  description  String?
+  stars        Int
+  currentStars Int
+  forks        Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  scrapedAt    DateTime @default(now())
+
+  @@unique([owner, name])
+  @@index([scrapedAt])
+}
+
+model JavaMonthlyRepository {
+  id           String   @id @default(cuid())
+  owner        String
+  name         String
+  url          String
+  description  String?
+  stars        Int
+  currentStars Int
+  forks        Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  scrapedAt    DateTime @default(now())
+
+  @@unique([owner, name])
+  @@index([scrapedAt])
+}
+
+model CSharpDailyRepository {
+  id           String   @id @default(cuid())
+  owner        String
+  name         String
+  url          String
+  description  String?
+  stars        Int
+  currentStars Int
+  forks        Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  scrapedAt    DateTime @default(now())
+
+  @@unique([owner, name])
+  @@index([scrapedAt])
+}
+
+model CSharpWeeklyRepository {
+  id           String   @id @default(cuid())
+  owner        String
+  name         String
+  url          String
+  description  String?
+  stars        Int
+  currentStars Int
+  forks        Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  scrapedAt    DateTime @default(now())
+
+  @@unique([owner, name])
+  @@index([scrapedAt])
+}
+
+model CSharpMonthlyRepository {
+  id           String   @id @default(cuid())
+  owner        String
+  name         String
+  url          String
+  description  String?
+  stars        Int
+  currentStars Int
+  forks        Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  scrapedAt    DateTime @default(now())
+
+  @@unique([owner, name])
+  @@index([scrapedAt])
+}
+
+model RustDailyRepository {
+  id           String   @id @default(cuid())
+  owner        String
+  name         String
+  url          String
+  description  String?
+  stars        Int
+  currentStars Int
+  forks        Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  scrapedAt    DateTime @default(now())
+
+  @@unique([owner, name])
+  @@index([scrapedAt])
+}
+
+model RustWeeklyRepository {
+  id           String   @id @default(cuid())
+  owner        String
+  name         String
+  url          String
+  description  String?
+  stars        Int
+  currentStars Int
+  forks        Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  scrapedAt    DateTime @default(now())
+
+  @@unique([owner, name])
+  @@index([scrapedAt])
+}
+
+model RustMonthlyRepository {
+  id           String   @id @default(cuid())
+  owner        String
+  name         String
+  url          String
+  description  String?
+  stars        Int
+  currentStars Int
+  forks        Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  scrapedAt    DateTime @default(now())
+
+  @@unique([owner, name])
+  @@index([scrapedAt])
+}
+
+model RubyDailyRepository {
+  id           String   @id @default(cuid())
+  owner        String
+  name         String
+  url          String
+  description  String?
+  stars        Int
+  currentStars Int
+  forks        Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  scrapedAt    DateTime @default(now())
+
+  @@unique([owner, name])
+  @@index([scrapedAt])
+}
+
+model RubyWeeklyRepository {
+  id           String   @id @default(cuid())
+  owner        String
+  name         String
+  url          String
+  description  String?
+  stars        Int
+  currentStars Int
+  forks        Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  scrapedAt    DateTime @default(now())
+
+  @@unique([owner, name])
+  @@index([scrapedAt])
+}
+
+model RubyMonthlyRepository {
+  id           String   @id @default(cuid())
+  owner        String
+  name         String
+  url          String
+  description  String?
+  stars        Int
+  currentStars Int
+  forks        Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  scrapedAt    DateTime @default(now())
+
+  @@unique([owner, name])
+  @@index([scrapedAt])
+}
+
+model PhpDailyRepository {
+  id           String   @id @default(cuid())
+  owner        String
+  name         String
+  url          String
+  description  String?
+  stars        Int
+  currentStars Int
+  forks        Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  scrapedAt    DateTime @default(now())
+
+  @@unique([owner, name])
+  @@index([scrapedAt])
+}
+
+model PhpWeeklyRepository {
+  id           String   @id @default(cuid())
+  owner        String
+  name         String
+  url          String
+  description  String?
+  stars        Int
+  currentStars Int
+  forks        Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  scrapedAt    DateTime @default(now())
+
+  @@unique([owner, name])
+  @@index([scrapedAt])
+}
+
+model PhpMonthlyRepository {
+  id           String   @id @default(cuid())
+  owner        String
+  name         String
+  url          String
+  description  String?
+  stars        Int
+  currentStars Int
+  forks        Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  scrapedAt    DateTime @default(now())
+
+  @@unique([owner, name])
+  @@index([scrapedAt])
+}
+
+model SwiftDailyRepository {
+  id           String   @id @default(cuid())
+  owner        String
+  name         String
+  url          String
+  description  String?
+  stars        Int
+  currentStars Int
+  forks        Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  scrapedAt    DateTime @default(now())
+
+  @@unique([owner, name])
+  @@index([scrapedAt])
+}
+
+model SwiftWeeklyRepository {
+  id           String   @id @default(cuid())
+  owner        String
+  name         String
+  url          String
+  description  String?
+  stars        Int
+  currentStars Int
+  forks        Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  scrapedAt    DateTime @default(now())
+
+  @@unique([owner, name])
+  @@index([scrapedAt])
+}
+
+model SwiftMonthlyRepository {
+  id           String   @id @default(cuid())
+  owner        String
+  name         String
+  url          String
+  description  String?
+  stars        Int
+  currentStars Int
+  forks        Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  scrapedAt    DateTime @default(now())
+
+  @@unique([owner, name])
+  @@index([scrapedAt])
+}
+
+model KotlinDailyRepository {
+  id           String   @id @default(cuid())
+  owner        String
+  name         String
+  url          String
+  description  String?
+  stars        Int
+  currentStars Int
+  forks        Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  scrapedAt    DateTime @default(now())
+
+  @@unique([owner, name])
+  @@index([scrapedAt])
+}
+
+model KotlinWeeklyRepository {
+  id           String   @id @default(cuid())
+  owner        String
+  name         String
+  url          String
+  description  String?
+  stars        Int
+  currentStars Int
+  forks        Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  scrapedAt    DateTime @default(now())
+
+  @@unique([owner, name])
+  @@index([scrapedAt])
+}
+
+model KotlinMonthlyRepository {
+  id           String   @id @default(cuid())
+  owner        String
+  name         String
+  url          String
+  description  String?
+  stars        Int
+  currentStars Int
+  forks        Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  scrapedAt    DateTime @default(now())
+
+  @@unique([owner, name])
+  @@index([scrapedAt])
+}
+
+model DartDailyRepository {
+  id           String   @id @default(cuid())
+  owner        String
+  name         String
+  url          String
+  description  String?
+  stars        Int
+  currentStars Int
+  forks        Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  scrapedAt    DateTime @default(now())
+
+  @@unique([owner, name])
+  @@index([scrapedAt])
+}
+
+model DartWeeklyRepository {
+  id           String   @id @default(cuid())
+  owner        String
+  name         String
+  url          String
+  description  String?
+  stars        Int
+  currentStars Int
+  forks        Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  scrapedAt    DateTime @default(now())
+
+  @@unique([owner, name])
+  @@index([scrapedAt])
+}
+
+model DartMonthlyRepository {
+  id           String   @id @default(cuid())
+  owner        String
+  name         String
+  url          String
+  description  String?
+  stars        Int
+  currentStars Int
+  forks        Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  scrapedAt    DateTime @default(now())
+
+  @@unique([owner, name])
+  @@index([scrapedAt])
+}

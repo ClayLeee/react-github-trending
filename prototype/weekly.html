@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>每週熱門項目 - GitHub Trending 追蹤器</title>
+    <style>
+        :root {
+            --primary: #0070f3;
+            --secondary: #6c757d;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --background: #f9fafb;
+            --background-dark: #18181b;
+            --card: #ffffff;
+            --card-dark: #1f1f23;
+            --text: #1f2937;
+            --text-dark: #e4e4e7;
+            --border: #e5e7eb;
+            --border-dark: #27272a;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+                Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--background);
+            color: var(--text);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: var(--background-dark);
+                color: var(--text-dark);
+            }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1rem;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            header {
+                border-color: var(--border-dark);
+            }
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .nav {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .nav a {
+            text-decoration: none;
+            color: var(--secondary);
+            transition: color 0.2s;
+            position: relative;
+        }
+
+        .nav a:hover {
+            color: var(--primary);
+        }
+
+        .nav a.active {
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        .nav a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -4px;
+            left: 0;
+            background-color: var(--primary);
+            transition: width 0.3s;
+        }
+
+        .nav a:hover::after, .nav a.active::after {
+            width: 100%;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .search-box {
+            display: flex;
+            position: relative;
+        }
+
+        .search-box input {
+            padding: 0.5rem 1rem 0.5rem 2.5rem;
+            border-radius: 0.25rem;
+            border: 1px solid var(--border);
+            background-color: var(--card);
+            color: var(--text);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .search-box input {
+                background-color: var(--card-dark);
+                border-color: var(--border-dark);
+                color: var(--text-dark);
+            }
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 0.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--secondary);
+        }
+
+        .filter-select {
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            border: 1px solid var(--border);
+            background-color: var(--card);
+            color: var(--text);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .filter-select {
+                background-color: var(--card-dark);
+                border-color: var(--border-dark);
+                color: var(--text-dark);
+            }
+        }
+
+        .repository-table {
+            width: 100%;
+            border-collapse: collapse;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            background-color: var(--card);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .repository-table {
+                background-color: var(--card-dark);
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            }
+        }
+
+        .repository-table th,
+        .repository-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .repository-table th,
+            .repository-table td {
+                border-color: var(--border-dark);
+            }
+        }
+
+        .repository-table th {
+            background-color: rgba(0, 0, 0, 0.02);
+            font-weight: 500;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .repository-table th {
+                background-color: rgba(255, 255, 255, 0.02);
+            }
+        }
+
+        .repository-table tr:hover {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .repository-table tr:hover {
+                background-color: rgba(255, 255, 255, 0.02);
+            }
+        }
+
+        .repo-name {
+            font-weight: 500;
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .repo-name:hover {
+            text-decoration: underline;
+        }
+
+        .star-count {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .stars-new {
+            color: var(--success);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .language-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.875rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            background-color: rgba(59, 130, 246, 0.1);
+            color: var(--info);
+        }
+
+        .language-badge::before {
+            content: '';
+            display: block;
+            width: 0.75rem;
+            height: 0.75rem;
+            border-radius: 50%;
+        }
+
+        .language-javascript::before {
+            background-color: #f7df1e;
+        }
+
+        .language-python::before {
+            background-color: #3572A5;
+        }
+
+        .language-typescript::before {
+            background-color: #3178c6;
+        }
+
+        .language-go::before {
+            background-color: #00ADD8;
+        }
+
+        .language-rust::before {
+            background-color: #DEA584;
+        }
+
+        .language-java::before {
+            background-color: #b07219;
+        }
+
+        .language-cpp::before {
+            background-color: #f34b7d;
+        }
+
+        .refresh-info {
+            font-size: 0.875rem;
+            color: var(--secondary);
+            margin-top: 1rem;
+            text-align: right;
+        }
+
+        .chart-container {
+            margin-top: 2rem;
+            background-color: var(--card);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .chart-container {
+                background-color: var(--card-dark);
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            }
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .chart-title {
+            font-size: 1.25rem;
+            font-weight: 500;
+        }
+
+        .chart {
+            height: 300px;
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+            padding-top: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 1rem;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .chart {
+                border-color: var(--border-dark);
+            }
+        }
+
+        .chart-bar {
+            flex: 1;
+            background-color: rgba(0, 112, 243, 0.2);
+            border-radius: 4px 4px 0 0;
+            position: relative;
+            min-width: 24px;
+            transition: height 0.5s ease;
+        }
+
+        .chart-bar:hover {
+            background-color: rgba(0, 112, 243, 0.4);
+        }
+
+        .chart-bar-label {
+            position: absolute;
+            bottom: -24px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--secondary);
+        }
+
+        .chart-bar-value {
+            position: absolute;
+            top: -24px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background-color: var(--primary);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            text-decoration: none;
+            transition: background-color 0.2s;
+            border: none;
+            cursor: pointer;
+            font-size: 0.875rem;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            border: 1px solid var(--border);
+            color: var(--secondary);
+        }
+
+        .btn-secondary:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .btn-secondary {
+                border-color: var(--border-dark);
+            }
+
+            .btn-secondary:hover {
+                background-color: rgba(255, 255, 255, 0.05);
+            }
+        }
+
+        .week-selector {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .week-label {
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .nav {
+                margin-top: 1rem;
+                width: 100%;
+                overflow-x: auto;
+                padding-bottom: 0.5rem;
+            }
+
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .controls {
+                width: 100%;
+                flex-wrap: wrap;
+            }
+
+            .repository-table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="index.html" class="logo">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+                </svg>
+                GitHub Trending 追蹤器
+            </a>
+            <nav class="nav">
+                <a href="daily.html">每日趨勢</a>
+                <a href="weekly.html" class="active">每週趨勢</a>
+                <a href="history.html">歷史數據</a>
+                <a href="dashboard.html">儀表板</a>
+                <a href="monitor.html">系統監控</a>
+            </nav>
+        </header>
+
+        <div class="page-header">
+            <h1>每週熱門項目</h1>
+            <div class="controls">
+                <div class="week-selector">
+                    <span class="week-label">第24週 (2023/06/12 - 2023/06/18)</span>
+                    <button class="btn btn-secondary">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                        上週
+                    </button>
+                    <button class="btn btn-secondary" disabled>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                        下週
+                    </button>
+                </div>
+                <div class="search-box">
+                    <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input type="text" placeholder="搜尋項目..." />
+                </div>
+                <select class="filter-select">
+                    <option value="">所有語言</option>
+                    <option value="javascript">JavaScript</option>
+                    <option value="typescript">TypeScript</option>
+                    <option value="python">Python</option>
+                    <option value="go">Go</option>
+                    <option value="rust">Rust</option>
+                    <option value="java">Java</option>
+                    <option value="cpp">C++</option>
+                </select>
+            </div>
+        </div>
+
+        <table class="repository-table">
+            <thead>
+                <tr>
+                    <th>專案</th>
+                    <th>描述</th>
+                    <th>語言</th>
+                    <th>星標</th>
+                    <th>本週新增</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        <a href="#" class="repo-name">ggerganov/llama.cpp</a>
+                    </td>
+                    <td>Port of Facebook's LLaMA model in C/C++</td>
+                    <td>
+                        <span class="language-badge language-cpp">C++</span>
+                    </td>
+                    <td class="star-count">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                        </svg>
+                        42,879
+                    </td>
+                    <td class="stars-new">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <polyline points="19 12 12 19 5 12"></polyline>
+                        </svg>
+                        +1,245
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <a href="#" class="repo-name">openai/whisper</a>
+                    </td>
+                    <td>Robust Speech Recognition via Large-Scale Weak Supervision</td>
+                    <td>
+                        <span class="language-badge language-python">Python</span>
+                    </td>
+                    <td class="star-count">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                        </svg>
+                        47,986
+                    </td>
+                    <td class="stars-new">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <polyline points="19 12 12 19 5 12"></polyline>
+                        </svg>
+                        +987
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <a href="#" class="repo-name">dair-ai/Prompt-Engineering-Guide</a>
+                    </td>
+                    <td>🐙 Guides, papers, lecture, notebooks and resources for prompt engineering</td>
+                    <td>
+                        <span class="language-badge language-javascript">JavaScript</span>
+                    </td>
+                    <td class="star-count">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                        </svg>
+                        25,432
+                    </td>
+                    <td class="stars-new">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <polyline points="19 12 12 19 5 12"></polyline>
+                        </svg>
+                        +876
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <a href="#" class="repo-name">langchain-ai/langchain</a>
+                    </td>
+                    <td>⚡ Building applications with LLMs through composability ⚡</td>
+                    <td>
+                        <span class="language-badge language-python">Python</span>
+                    </td>
+                    <td class="star-count">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                        </svg>
+                        65,789
+                    </td>
+                    <td class="stars-new">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <polyline points="19 12 12 19 5 12"></polyline>
+                        </svg>
+                        +795
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <a href="#" class="repo-name">facebook/react</a>
+                    </td>
+                    <td>A declarative, efficient, and flexible JavaScript library for building user interfaces.</td>
+                    <td>
+                        <span class="language-badge language-javascript">JavaScript</span>
+                    </td>
+                    <td class="star-count">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                        </svg>
+                        203,876
+                    </td>
+                    <td class="stars-new">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <polyline points="19 12 12 19 5 12"></polyline>
+                        </svg>
+                        +743
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <a href="#" class="repo-name">rust-lang/rust</a>
+                    </td>
+                    <td>Empowering everyone to build reliable and efficient software.</td>
+                    <td>
+                        <span class="language-badge language-rust">Rust</span>
+                    </td>
+                    <td class="star-count">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                        </svg>
+                        78,932
+                    </td>
+                    <td class="stars-new">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <polyline points="19 12 12 19 5 12"></polyline>
+                        </svg>
+                        +621
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="refresh-info">資料最後更新時間：2023年06月18日 23:30</div>
+
+        <div class="chart-container">
+            <div class="chart-header">
+                <h2 class="chart-title">本週熱門語言分佈</h2>
+            </div>
+            <div class="chart">
+                <div class="chart-bar" style="height: 90%;">
+                    <div class="chart-bar-value">45%</div>
+                    <div class="chart-bar-label">Python</div>
+                </div>
+                <div class="chart-bar" style="height: 75%;">
+                    <div class="chart-bar-value">37.5%</div>
+                    <div class="chart-bar-label">JavaScript</div>
+                </div>
+                <div class="chart-bar" style="height: 60%;">
+                    <div class="chart-bar-value">30%</div>
+                    <div class="chart-bar-label">TypeScript</div>
+                </div>
+                <div class="chart-bar" style="height: 50%;">
+                    <div class="chart-bar-value">25%</div>
+                    <div class="chart-bar-label">Rust</div>
+                </div>
+                <div class="chart-bar" style="height: 40%;">
+                    <div class="chart-bar-value">20%</div>
+                    <div class="chart-bar-label">Go</div>
+                </div>
+                <div class="chart-bar" style="height: 30%;">
+                    <div class="chart-bar-value">15%</div>
+                    <div class="chart-bar-label">C++</div>
+                </div>
+                <div class="chart-bar" style="height: 20%;">
+                    <div class="chart-bar-value">10%</div>
+                    <div class="chart-bar-label">Java</div>
+                </div>
+                <div class="chart-bar" style="height: 16%;">
+                    <div class="chart-bar-value">8%</div>
+                    <div class="chart-bar-label">其他</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

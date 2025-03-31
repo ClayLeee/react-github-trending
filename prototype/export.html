@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>數據匯出 - GitHub Trending 追蹤器</title>
+    <style>
+        :root {
+            --primary: #0070f3;
+            --secondary: #6c757d;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --background: #f9fafb;
+            --background-dark: #18181b;
+            --card: #ffffff;
+            --card-dark: #1f1f23;
+            --text: #1f2937;
+            --text-dark: #e4e4e7;
+            --border: #e5e7eb;
+            --border-dark: #27272a;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+                Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--background);
+            color: var(--text);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: var(--background-dark);
+                color: var(--text-dark);
+            }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1rem;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            header {
+                border-color: var(--border-dark);
+            }
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .nav {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .nav a {
+            text-decoration: none;
+            color: var(--secondary);
+            transition: color 0.2s;
+            position: relative;
+        }
+
+        .nav a:hover {
+            color: var(--primary);
+        }
+
+        .nav a.active {
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        .nav a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -4px;
+            left: 0;
+            background-color: var(--primary);
+            transition: width 0.3s;
+        }
+
+        .nav a:hover::after, .nav a.active::after {
+            width: 100%;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .card {
+            background-color: var(--card);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            margin-bottom: 1.5rem;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .card {
+                background-color: var(--card-dark);
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            }
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .card-header {
+                border-color: var(--border-dark);
+            }
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 500;
+            margin: 0;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-control {
+            display: block;
+            width: 100%;
+            padding: 0.5rem;
+            font-size: 1rem;
+            background-color: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 0.25rem;
+            color: var(--text);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .form-control {
+                background-color: var(--card-dark);
+                border-color: var(--border-dark);
+                color: var(--text-dark);
+            }
+        }
+
+        .form-select {
+            display: block;
+            width: 100%;
+            padding: 0.5rem;
+            font-size: 1rem;
+            background-color: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 0.25rem;
+            color: var(--text);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .form-select {
+                background-color: var(--card-dark);
+                border-color: var(--border-dark);
+                color: var(--text-dark);
+            }
+        }
+
+        .checkbox-group {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background-color: var(--primary);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            text-decoration: none;
+            transition: background-color 0.2s;
+            border: none;
+            cursor: pointer;
+            font-size: 0.875rem;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            border: 1px solid var(--border);
+            color: var(--secondary);
+        }
+
+        .btn-secondary:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .btn-secondary {
+                border-color: var(--border-dark);
+            }
+
+            .btn-secondary:hover {
+                background-color: rgba(255, 255, 255, 0.05);
+            }
+        }
+
+        .btn-success {
+            background-color: var(--success);
+        }
+
+        .btn-success:hover {
+            background-color: #0e9f6e;
+        }
+
+        .export-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .export-option {
+            display: flex;
+            flex-direction: column;
+            background-color: rgba(0, 0, 0, 0.025);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            transition: transform 0.2s;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .export-option {
+                background-color: rgba(255, 255, 255, 0.025);
+            }
+        }
+
+        .export-option:hover {
+            transform: translateY(-2px);
+        }
+
+        .export-option-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .export-option-icon {
+            color: var(--primary);
+        }
+
+        .export-option-title {
+            font-size: 1.125rem;
+            font-weight: 500;
+            margin: 0;
+        }
+
+        .export-option-description {
+            margin-bottom: 1.5rem;
+            font-size: 0.875rem;
+            color: var(--secondary);
+            flex-grow: 1;
+        }
+
+        .export-history {
+            margin-top: 2rem;
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .history-table th, .history-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .history-table th, .history-table td {
+                border-color: var(--border-dark);
+            }
+        }
+
+        .history-table th {
+            font-weight: 500;
+            background-color: rgba(0, 0, 0, 0.025);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .history-table th {
+                background-color: rgba(255, 255, 255, 0.025);
+            }
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            border-radius: 0.25rem;
+        }
+
+        .badge-success {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .badge-primary {
+            background-color: rgba(59, 130, 246, 0.1);
+            color: var(--primary);
+        }
+
+        .badge-secondary {
+            background-color: rgba(107, 114, 128, 0.1);
+            color: var(--secondary);
+        }
+
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .nav {
+                margin-top: 1rem;
+                width: 100%;
+                overflow-x: auto;
+                padding-bottom: 0.5rem;
+            }
+
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .export-options {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="index.html" class="logo">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+                </svg>
+                GitHub Trending 追蹤器
+            </a>
+            <nav class="nav">
+                <a href="daily.html">每日趨勢</a>
+                <a href="weekly.html">每週趨勢</a>
+                <a href="history.html">歷史數據</a>
+                <a href="dashboard.html">儀表板</a>
+                <a href="monitor.html">系統監控</a>
+                <a href="export.html" class="active">數據匯出</a>
+            </nav>
+        </header>
+
+        <div class="page-header">
+            <h1>數據匯出</h1>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">匯出選項</h2>
+            </div>
+            <form>
+                <div class="form-group">
+                    <label class="form-label">數據類型</label>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="daily" name="data_type" value="daily" checked>
+                            <label for="daily">每日趨勢</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="weekly" name="data_type" value="weekly">
+                            <label for="weekly">每週趨勢</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="historical" name="data_type" value="historical">
+                            <label for="historical">歷史數據</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="date_range">日期範圍</label>
+                    <select class="form-select" id="date_range">
+                        <option value="today">今天</option>
+                        <option value="yesterday">昨天</option>
+                        <option value="last_7_days">過去 7 天</option>
+                        <option value="last_30_days" selected>過去 30 天</option>
+                        <option value="last_90_days">過去 90 天</option>
+                        <option value="custom">自訂日期範圍</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="language">程式語言</label>
+                    <select class="form-select" id="language">
+                        <option value="all" selected>所有語言</option>
+                        <option value="javascript">JavaScript</option>
+                        <option value="python">Python</option>
+                        <option value="java">Java</option>
+                        <option value="go">Go</option>
+                        <option value="rust">Rust</option>
+                        <option value="typescript">TypeScript</option>
+                        <option value="c_plus_plus">C++</option>
+                        <option value="c_sharp">C#</option>
+                        <option value="php">PHP</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">欄位選擇</label>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="field_name" name="fields" value="name" checked>
+                            <label for="field_name">項目名稱</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="field_owner" name="fields" value="owner" checked>
+                            <label for="field_owner">擁有者</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="field_description" name="fields" value="description" checked>
+                            <label for="field_description">描述</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="field_language" name="fields" value="language" checked>
+                            <label for="field_language">語言</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="field_stars" name="fields" value="stars" checked>
+                            <label for="field_stars">星星數</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="field_forks" name="fields" value="forks" checked>
+                            <label for="field_forks">分叉數</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="field_url" name="fields" value="url" checked>
+                            <label for="field_url">URL</label>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+            <div class="export-options">
+                <div class="export-option">
+                    <div class="export-option-header">
+                        <div class="export-option-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                <polyline points="10 9 9 9 8 9"></polyline>
+                            </svg>
+                        </div>
+                        <h3 class="export-option-title">CSV 格式</h3>
+                    </div>
+                    <p class="export-option-description">匯出為逗號分隔值格式，適合在 Excel 或 Google 試算表等軟體中開啟。</p>
+                    <button class="btn btn-success">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        下載 CSV
+                    </button>
+                </div>
+
+                <div class="export-option">
+                    <div class="export-option-header">
+                        <div class="export-option-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                <polyline points="10 9 9 9 8 9"></polyline>
+                            </svg>
+                        </div>
+                        <h3 class="export-option-title">JSON 格式</h3>
+                    </div>
+                    <p class="export-option-description">匯出為 JSON 格式，適合在程式或 Web 應用程式中使用。</p>
+                    <button class="btn btn-success">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        下載 JSON
+                    </button>
+                </div>
+
+                <div class="export-option">
+                    <div class="export-option-header">
+                        <div class="export-option-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line>
+                                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="export-option-title">API 存取</h3>
+                    </div>
+                    <p class="export-option-description">獲取 API 存取金鑰以連接到我們的 API 並以程式方式存取數據。</p>
+                    <button class="btn btn-secondary">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                        獲取 API 金鑰
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="export-history">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">匯出歷史記錄</h2>
+                </div>
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>日期時間</th>
+                            <th>類型</th>
+                            <th>格式</th>
+                            <th>數據範圍</th>
+                            <th>狀態</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>2023-06-15 10:23:45</td>
+                            <td>每日趨勢</td>
+                            <td>CSV</td>
+                            <td>過去 7 天</td>
+                            <td><span class="badge badge-success">已完成</span></td>
+                            <td>
+                                <button class="btn btn-secondary">下載</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>2023-06-10 16:42:18</td>
+                            <td>每週趨勢</td>
+                            <td>JSON</td>
+                            <td>過去 30 天</td>
+                            <td><span class="badge badge-success">已完成</span></td>
+                            <td>
+                                <button class="btn btn-secondary">下載</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>2023-06-01 08:15:32</td>
+                            <td>歷史數據</td>
+                            <td>CSV</td>
+                            <td>過去 90 天</td>
+                            <td><span class="badge badge-success">已完成</span></td>
+                            <td>
+                                <button class="btn btn-secondary">下載</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>2023-05-28 14:08:57</td>
+                            <td>每日趨勢</td>
+                            <td>JSON</td>
+                            <td>過去 30 天</td>
+                            <td><span class="badge badge-success">已完成</span></td>
+                            <td>
+                                <button class="btn btn-secondary">下載</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
